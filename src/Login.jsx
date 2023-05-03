@@ -1,38 +1,51 @@
+import axios from "axios";
 import React, { useState } from "react";
-import Axios from "axios";
 
 export const Login = (props) => {
     const [email, setEmail] = useState('');
     const [pass, setPass] = useState('');
+    const [error, setError] = useState('');
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         const data = {
             userNameOrEmailAddress: email,
             password: pass,
             rememberMe: true
         }
 
-        const result = fetch('http://localhost/api/account/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data)
-        }).then((res) => res.json())
-        .then((data) => {
-            console.log(data);
-        })
+        try {
+            const response = await axios.post("http://localhost/api/account/login",
+                JSON.stringify(data),
+                {
+                    headers: { "Content-Type": "application/json" },
+                }
+            );
+            console.log(JSON.stringify(response?.data))
+            
+        }catch (err){
+            console.log(err)
+            if(!err?.response){
+                setError('No Server Response');
+            } else if(err.response?.status === 400){
+                setError('Missing username or password');
+            }else if(err.response?.status === 401){
+                setError('Unauthorized');
+            }else{
+                setError('Login Failed')
+            }
+        }
     }
 
     return (
         <div className="auth-form-container">
+            <h1>FutApp</h1>
             <h2>Login</h2>
             <form className="login-form" onSubmit={handleSubmit}>
-                <label htmlFor="email">email</label>
+                <label htmlFor="email">Email o Usuario</label>
                 <input value={email} onChange={(e) => setEmail(e.target.value)} type="text" placeholder="youremail@gmail.com" id="email" name="email" />
-                <label htmlFor="password">password</label>
+                <label htmlFor="password">Password</label>
                 <input value={pass} onChange={(e) => setPass(e.target.value)} type="password" placeholder="*********" id="password" name="password" />
                 <button type="submit"> Log In </button>
             </form>
